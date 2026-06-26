@@ -11,10 +11,10 @@ embedded-c-foundations/
   src/
     packet_parser.c     [X] 
     ring_buffer.c       [X]
-    uart_rx_buffer.c
-    timeout.c
-    endian.c
-    state_machine.c
+    uart_rx_buffer.c    [X]
+    timeout.c           [X]
+    endian.c            [X]
+    state_machine.c     [X]
   include/
     packet_validator.h
     streaming_parser.h
