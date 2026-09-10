@@ -1,0 +1,25 @@
+name: Impactd lab
+on:
+  pull_request:
+    paths:
+      - 'impactd-lab/**'
+      - 'AGENTS.md'
+      - '.github/workflows/impactd-lab.yml'
+  push:
+    branches: [Main]
+    paths:
+      - 'impactd-lab/**'
+      - 'AGENTS.md'
+      - '.github/workflows/impactd-lab.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harness acceptance gate
+        run: make -C impactd-lab check
+      - name: Address and undefined-behavior sanitizers
+        run: make -C impactd-lab sanitize
