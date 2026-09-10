@@ -115,11 +115,38 @@ incidental timestamps and temporary paths. It rejects stale inputs, altered
 counts, and a failed recollection retaining an old success. Timeouts cover direct
 children only; the trusted-fixture runner is not an arbitrary-command sandbox.
 
+## Compare a change to baseline evidence
+
+Before editing, preserve a baseline report:
+
+```sh
+make coverage
+cp build/coverage.json build/baseline.json
+# Now edit fixture/image.c, then analyze without executing the candidate:
+python3 scripts/impact.py --baseline build/baseline.json
+# Finally verify the candidate:
+make check
+```
+
+You can also pass `--candidate /path/to/another/impactd-lab` to inspect an isolated
+candidate. The analyzer compares the four recorded inputs with their hash-checked
+baseline snapshots. It maps replaced/deleted lines to the old version's coverage,
+so new lines inserted above a change cannot shift coverage onto the wrong test.
+New code and unmapped changes flag evidence gaps and broaden verification.
+The output supplies test priorities and explanations; **it never permits skipping
+the full gate**. It does not inspect every repository file or establish semantic
+dependencies. A baseline produced before snapshots were added must be recollected.
+
+`make check` now includes 12 impact acceptance tests. Their integration experiment
+changes the entry boundary from `>=` to `>` in a disposable candidate, prioritizes
+eight tests from baseline evidence, and verifies that `entry_at_payload_end`
+detects the defect. Inspect `build/impact-demo.json` for the analysis and results.
+
 ## Next implementation milestone
 
-1. Map changed source regions to recorded observations, handling line movement explicitly.
-2. Compare selections with the full suite on held-out defects.
-3. Extend the Rust evidence/query layer while preserving the reference comparison.
+1. Compare priorities with the full suite on held-out defects and additional fixtures.
+2. Extend the Rust evidence/query layer while preserving the reference comparison.
+3. Expand tracked inputs and integrate Git diffs with explicit unsupported-change handling.
 
 Keep runtime observations, declared requirements, and inferences distinct.
 Introduce eBPF only when a specific missing observation justifies it.

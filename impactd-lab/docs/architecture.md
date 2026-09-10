@@ -28,3 +28,14 @@ count against separate Python executions. It writes `build/parity.json` only
 after comparison and negative checks pass. `make rust-check` also exercises
 direct-child timeout and failure handling. Raw gcov JSON is normalized by Python;
 the Rust runner is not yet a replacement for the Python `explain` query.
+
+The Python collector also stores UTF-8 snapshots of its four tracked inputs.
+`scripts/impact.py` verifies those snapshots against the baseline hashes and
+computes a text diff against a candidate directory. Replaced/deleted validator
+lines use old coordinates to look up recorded test executions. Insertions,
+uncovered changes, missing inputs, and header/test/collector changes flag evidence
+gaps and broaden the priority list. The full `make check` gate always remains
+required. Only the four listed inputs are compared; this is not a repository-wide
+Git analyzer. `build/impact-demo.json` captures a candidate defect detected by a
+test selected from historical coverage. The Rust raw report is not yet an input
+to this analyzer, because it does not contain baseline source snapshots.
