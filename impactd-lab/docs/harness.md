@@ -23,6 +23,10 @@ not an agent eval.
 
 The default gate requires GCC and a matching gcov, Make, and Python 3. It has no
 package downloads, API keys, model calls, or third-party Python dependencies.
+The native gate, `make rust-check`, additionally needs Rust/Cargo, gzip and
+sha256sum. Cargo runs locked and offline with zero registry dependencies. CI runs
+both gates. A machine without Rust must report that local gate as unavailable
+and verify the CI result rather than describe a skipped check as passing.
 Sanitizers remain a separate gate. On this hosted execution environment,
 LeakSanitizer cannot inspect `/proc`; a narrower documented rerun is
 `ASAN_OPTIONS=detect_leaks=0 make sanitize`. This does not validate leak detection.

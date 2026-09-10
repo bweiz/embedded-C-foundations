@@ -21,5 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Harness acceptance gate
         run: make -C impactd-lab check
+      - name: Rust runner and coverage parity
+        run: make -C impactd-lab rust-check
       - name: Address and undefined-behavior sanitizers
         run: make -C impactd-lab sanitize

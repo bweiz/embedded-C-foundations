@@ -1,7 +1,13 @@
 CC = cc
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Werror -O0 -g
 
-.PHONY: test demo sanitize clean doctor check coverage
+.PHONY: test demo sanitize clean doctor check coverage rust-check rust-coverage
+rust-coverage:
+	CARGO_TARGET_DIR=build/rust-target cargo run --locked --offline --manifest-path runner/Cargo.toml -- collect .
+rust-check:
+	CARGO_TARGET_DIR=build/rust-target cargo test --locked --offline --manifest-path runner/Cargo.toml
+	$(MAKE) rust-coverage
+	python3 scripts/parity.py
 doctor:
 	CC="$(CC)" python3 scripts/check.py --doctor
 check:
