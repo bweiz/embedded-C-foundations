@@ -17,4 +17,14 @@ an observed line. This is conservative file-level freshness, not semantic
 invalidation, cross-version line mapping, or proof that unchanged code is safe.
 
 Coverage means `observed_execution`. Requirements remain human-authored.
-There is no inferred dependency graph, eBPF sensor, or Rust runner yet.
+There is no inferred dependency graph or eBPF sensor yet.
+
+`runner/src/main.rs` independently supervises compilation and named executions,
+resets counters in its own disposable workspace, and records raw gcov JSON in
+`build/rust-coverage.json`. It uses Rust's standard library plus existing Linux
+tools (GCC, gcov, gzip, sha256sum); Cargo has no registry dependencies.
+`scripts/parity.py` validates report identity and compares every positive line
+count against separate Python executions. It writes `build/parity.json` only
+after comparison and negative checks pass. `make rust-check` also exercises
+direct-child timeout and failure handling. Raw gcov JSON is normalized by Python;
+the Rust runner is not yet a replacement for the Python `explain` query.

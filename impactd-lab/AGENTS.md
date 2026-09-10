@@ -4,6 +4,7 @@
 - `README.md`: image contract, run commands, and current limitations.
 - `docs/architecture.md`: component boundaries and evidence semantics.
 - `docs/tasks/002-coverage.md`: acceptance criteria for the coverage milestone.
+- `docs/tasks/003-rust-runner.md`: native runner and parity acceptance criteria.
 - `docs/harness.md`: the workflow and how to improve this harness.
 
 ## Work loop
@@ -16,6 +17,8 @@
 ## Executable gates
 - `make check`: fresh C build, boundary suite, mutation demo, coverage and acceptance checks.
 - `make sanitize`: additional C memory/undefined-behavior check when C behavior changes.
+- `make rust-check`: native runner unit tests, 40-test coverage parity and rejection cases.
+  Required for runner changes; use CI to execute it if the local toolchain is unavailable.
 - Do not turn a failed prerequisite or skipped check into a pass.
 - If the environment blocks a check, retain the failure and disclose any narrower rerun.
 
@@ -28,7 +31,7 @@
 - Do not add confidence percentages without a measured calibration method.
 
 ## Scope and completion
-Use C for the fixture and Python standard-library scripts for the current harness.
-Rust is the intended future runner; introduce it with a working toolchain and a parity check.
+Use C for the fixture, Rust for native execution, and Python standard-library scripts
+for reference collection, JSON normalization and harness checks. Preserve parity during migration.
 Generated binaries and evidence belong under ignored `build/`.
 Never infer production firmware safety or authenticity from this structural fixture.

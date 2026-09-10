@@ -16,6 +16,7 @@ The coverage/harness gate additionally requires GCC and a matching gcov with JSO
 cd impactd-lab
 make doctor
 make check     # clean rebuild, suite, demo, isolated coverage, acceptance checks
+make rust-check # Rust/Cargo required; unit tests and Python/Rust coverage parity
 make test
 make demo
 make sanitize  # compiler must support AddressSanitizer and UBSan
@@ -96,11 +97,29 @@ automatically invalidate semantic claims, or prove correctness.
 This is a baseline experiment using established mutation-testing principles,
 not evidence of a novel impact-analysis algorithm.
 
+## Native execution runner
+
+The standard-library Rust runner independently compiles and runs the fixture,
+isolates gcov counters, supervises direct-child timeouts, and records raw evidence.
+Requires Rust/Cargo, GCC/gcov, gzip and sha256sum. No Cargo registry downloads.
+`GCC` and `GCOV` for the native runner are executable paths, not shell commands
+or strings containing flags. Rust captures raw gcov JSON; Python validates it.
+
+```sh
+make rust-check
+# Reports: build/rust-coverage.json and build/parity.json
+```
+
+Parity compares all positive line counts for every one of the 40 tests, ignoring
+incidental timestamps and temporary paths. It rejects stale inputs, altered
+counts, and a failed recollection retaining an old success. Timeouts cover direct
+children only; the trusted-fixture runner is not an arbitrary-command sandbox.
+
 ## Next implementation milestone
 
-1. Build a Rust runner with output parity against the current Python collector.
-2. Map changed source regions to fresh observations, handling line movement explicitly.
-3. Compare selections with the full suite on held-out defects.
+1. Map changed source regions to recorded observations, handling line movement explicitly.
+2. Compare selections with the full suite on held-out defects.
+3. Extend the Rust evidence/query layer while preserving the reference comparison.
 
 Keep runtime observations, declared requirements, and inferences distinct.
 Introduce eBPF only when a specific missing observation justifies it.
