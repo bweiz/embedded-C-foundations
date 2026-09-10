@@ -5,6 +5,7 @@
 - `docs/architecture.md`: component boundaries and evidence semantics.
 - `docs/tasks/002-coverage.md`: acceptance criteria for the coverage milestone.
 - `docs/tasks/003-rust-runner.md`: native runner and parity acceptance criteria.
+- `docs/tasks/004-change-impact.md`: baseline diff mapping and conservative verification plans.
 - `docs/harness.md`: the workflow and how to improve this harness.
 
 ## Work loop
@@ -25,6 +26,8 @@
 ## Evidence rules
 - A line executed is not proof that its behavior was asserted.
 - A missing observed edge is not evidence of no dependency.
+- Match candidate diffs to old source coordinates from hash-checked snapshots.
+- Test priorities never authorize skipping the full verification gate.
 - Reports apply only to their recorded source/header/test identities.
 - Coverage must be isolated for each named execution; never reuse counters from another test.
 - Mutations run on disposable source copies. Never weaken the normal suite for a demo.

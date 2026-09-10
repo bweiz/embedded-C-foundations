@@ -31,13 +31,17 @@ def collect():
     REPORT.parent.mkdir(exist_ok=True)
     REPORT.unlink(missing_ok=True)  # a failed new collection must not leave an old success
     before = identities()
+    snapshots = {name: (ROOT / name).read_bytes().decode("utf-8") for name in INPUTS}
+    if any(hashlib.sha256(text.encode()).hexdigest() != before[name]
+           for name, text in snapshots.items()):
+        raise RuntimeError("Inputs changed while taking baseline snapshots")
     gcc = shlex.split(os.environ.get("GCC", "gcc"))
     gcov = shlex.split(os.environ.get("GCOV", "gcov"))
     if not gcc or not gcov:
         raise RuntimeError("GCC and GCOV must name commands")
     report = {"schema_version": 1, "evidence_kind": "observed_execution",
               "recorded_at": datetime.now(timezone.utc).isoformat(),
-              "source_sha256": before, "tests": {},
+              "source_sha256": before, "source_snapshots": snapshots, "tests": {},
               "limitations": ["Executed lines do not prove assertions or dependency completeness",
                               "No observed test is not evidence that no test is needed",
                               "Freshness is file-level, not semantic or environment equivalence"]}

@@ -92,7 +92,8 @@ def main():
     try:
         doctor()
         # -B forces recompilation; a previous binary cannot make this gate green.
-        for argv in [["make", "-B", "test"], ["make", "demo"], ["make", "coverage"]]:
+        for argv in [["make", "-B", "test"], ["make", "demo"], ["make", "coverage"],
+                     [sys.executable, "scripts/test_impact.py"]]:
             result = command(argv)
             report["steps"].append(result)
             require(result["exit_code"] == 0, f"Failed {argv}: {result['stderr']}")
