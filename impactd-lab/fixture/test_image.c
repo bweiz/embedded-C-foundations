@@ -39,6 +39,15 @@ static int entry_probe(int weak)
     return 0;
 }
 
+static const char *selected;
+static int list_only;
+/* Lazy macro: unselected checks must not execute validate_image at all. */
+#define CHECK(name, actual, expected) do { \
+    if (list_only) puts(name); \
+    else if (selected == NULL || strcmp(selected, name) == 0) \
+        check(name, actual, expected); \
+} while (0)
+
 static unsigned checks;
 static unsigned failures;
 static void check(const char *name, image_status_t actual, image_status_t expected)
@@ -56,24 +65,26 @@ int main(int argc, char **argv)
 {
     if (argc == 2 && strcmp(argv[1], "--weak-entry") == 0) return entry_probe(1);
     if (argc == 2 && strcmp(argv[1], "--strong-entry") == 0) return entry_probe(0);
-    if (argc != 1) {
-        fprintf(stderr, "usage: %s [--weak-entry|--strong-entry]\n", argv[0]);
+    if (argc == 2 && strcmp(argv[1], "--list") == 0) list_only = 1;
+    else if (argc == 3 && strcmp(argv[1], "--test") == 0) selected = argv[2];
+    else if (argc != 1) {
+        fprintf(stderr, "usage: %s [--list|--test NAME|--weak-entry|--strong-entry]\n", argv[0]);
         return 2;
     }
     uint8_t bytes[25];
     valid_image(bytes);
-    check("null", validate_image(NULL, 24), IMAGE_ERR_NULL);
+    CHECK("null", validate_image(NULL, 24), IMAGE_ERR_NULL);
     for (size_t n = 0; n < IMAGE_HEADER_SIZE; ++n) {
         char name[40];
         snprintf(name, sizeof name, "short_header_%zu", n);
-        check(name, validate_image(bytes, n), IMAGE_ERR_SHORT_HEADER);
+        CHECK(name, validate_image(bytes, n), IMAGE_ERR_SHORT_HEADER);
     }
-    check("valid", validate_image(bytes, 24), IMAGE_OK);
+    CHECK("valid", validate_image(bytes, 24), IMAGE_OK);
     bytes[24] = 0xAA;
-    check("trailing_bytes_allowed", validate_image(bytes, 25), IMAGE_OK);
+    CHECK("trailing_bytes_allowed", validate_image(bytes, 25), IMAGE_OK);
     uint8_t unaligned[25];
     memcpy(unaligned + 1, bytes, 24);
-    check("unaligned_input", validate_image(unaligned + 1, 24), IMAGE_OK);
+    CHECK("unaligned_input", validate_image(unaligned + 1, 24), IMAGE_OK);
 
     struct test_case {
         const char *name;
@@ -99,13 +110,18 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
         valid_image(bytes);
         put_u32_le(bytes + cases[i].offset, cases[i].value);
-        check(cases[i].name, validate_image(bytes, 24), cases[i].expected);
+        CHECK(cases[i].name, validate_image(bytes, 24), cases[i].expected);
     }
     valid_image(bytes);
-    check("truncated_payload", validate_image(bytes, 23), IMAGE_ERR_SIZE);
+    CHECK("truncated_payload", validate_image(bytes, 23), IMAGE_ERR_SIZE);
     put_u32_le(bytes + 12, IMAGE_MEMORY_END - 4);
     put_u32_le(bytes + 16, IMAGE_MEMORY_END - 1);
-    check("payload_ends_at_memory_end", validate_image(bytes, 24), IMAGE_OK);
+    CHECK("payload_ends_at_memory_end", validate_image(bytes, 24), IMAGE_OK);
+    if (list_only) return 0;
+    if (checks == 0) {
+        fprintf(stderr, "Unknown test: %s\n", selected);
+        return 2;
+    }
     printf("%u checks, %u failures\n", checks, failures);
     return failures != 0;
 }

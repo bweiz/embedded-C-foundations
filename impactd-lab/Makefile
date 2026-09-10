@@ -1,7 +1,13 @@
 CC = cc
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Werror -O0 -g
 
-.PHONY: test demo sanitize clean
+.PHONY: test demo sanitize clean doctor check coverage
+doctor:
+	CC="$(CC)" python3 scripts/check.py --doctor
+check:
+	CC="$(CC)" python3 scripts/check.py
+coverage:
+	python3 scripts/coverage.py collect
 build/test_image: fixture/image.c fixture/image.h fixture/test_image.c
 	mkdir -p build
 	$(CC) $(CFLAGS) fixture/image.c fixture/test_image.c -o $@
